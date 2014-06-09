@@ -1,0 +1,53 @@
+#!/bin/bash
+#Mutillidae II Amazon EC2 Deployment Script V1.0
+#06/09/14
+#Written by SkeyeLlama 
+#http://l4m3rs.blogspot.com
+#https://twitter.com/SkeyeLlama
+#
+#Automated configuration script for Amazon Linux Instances
+#Inspiration and reference:
+#	AWS LAMP sample script http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html
+#	AWSlab by @averagesecguy https://github.com/averagesecurityguy/AWSlab
+#
+#Mutillidae is accessed at http://host/mutillidae/
+#
+#
+#Update Base Image and install LAMP stack
+yum update -y 
+yum groupinstall -y "Web Server"
+yum groupinstall -y "MySQL Database"
+yum groupinstall -y "PHP Support"
+yum install -y php-mysql
+yum install -y php-mbstring
+#
+#Set PHP timezone and error reporting levels in php.ini
+sed -i 's:;date.timezone =:date.timezone = UTC:' /etc/php.ini
+sed -i 's:error_reporting = E_ALL \& ~E_DEPRECATED:error_reporting = E_ALL \& ~E_NOTICE \& ~E_DEPRECATED:' /etc/php.ini
+#
+#Launch httpd / mysqld and configure for start on boot
+service mysqld start
+chkconfig mysqld on
+service httpd start
+chkconfig httpd on
+#
+#Add www group. Add default user to www group. Grant ownership of web directory to www group.
+groupadd www
+usermod -a -G www ec2-user
+chown -R root:www /var/www
+chmod 2775 /var/www
+#
+#Get latest Mutillidae II package and move it to the web directory
+wget http://sourceforge.net/projects/mutillidae/files/latest/download?source=files -O mutillidae.zip
+unzip mutillidae.zip
+mv var/www/mutillidae /var/www/html/
+#
+#Set web directory permissions
+find /var/www -type d -exec chmod 2775 {} +
+find /var/www -type f -exec chmod 0664 {} +
+#
+#Configure .htaccess to permit connections from any.
+sed -i 's:192.168.0.0/16:all:' /var/www/html/mutillidae/.htaccess
+#
+#Initialize the Mutillidae database.
+curl http://127.0.0.1/mutillidae/set-up-database.php
