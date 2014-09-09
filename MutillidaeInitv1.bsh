@@ -1,5 +1,5 @@
 #!/bin/bash
-#Mutillidae II Amazon EC2 Deployment Script V1.0
+#Mutillidae II Amazon EC2 Deployment Script V1.1
 #06/09/14
 #Written by SkeyeLlama 
 #http://l4m3rs.blogspot.com
@@ -40,7 +40,7 @@ chmod 2775 /var/www
 #Get latest Mutillidae II package and move it to the web directory
 wget http://sourceforge.net/projects/mutillidae/files/latest/download?source=files -O mutillidae.zip
 unzip mutillidae.zip
-mv var/www/mutillidae /var/www/html/
+mv /mutillidae /var/www/html/
 #
 #Set web directory permissions
 find /var/www -type d -exec chmod 2775 {} +
